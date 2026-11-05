@@ -1,15 +1,33 @@
 const SUPABASE_URL = 'https://vrhyyogfzenzgdiiduhx.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_rqAcMpzMNV_Tcsw4mzrO3A_aCpCMgmo';
 
-async function bookService(service) {
-  const name = prompt("اكتب اسمك:");
-  if (!name) return;
+let selectedService = '';
 
-  const phone = prompt("اكتب رقم هاتفك:");
-  if (!phone) return;
+function bookService(service) {
+  selectedService = service;
+  document.getElementById('selectedService').textContent =
+    'الخدمة المختارة: ' + service;
 
-  const address = prompt("اكتب عنوانك:");
-  if (!address) return;
+  document.getElementById('booking').style.display = 'block';
+  document.getElementById('booking').scrollIntoView({
+    behavior: 'smooth'
+  });
+}
+
+function closeBooking() {
+  document.getElementById('booking').style.display = 'none';
+}
+
+document.getElementById('bookingForm').addEventListener('submit', async function(event) {
+  event.preventDefault();
+
+  const name = document.getElementById('customerName').value.trim();
+  const phone = document.getElementById('customerPhone').value.trim();
+  const address = document.getElementById('customerAddress').value.trim();
+
+  const submitButton = this.querySelector('button[type="submit"]');
+  submitButton.disabled = true;
+  submitButton.textContent = 'جاري إرسال الطلب...';
 
   try {
     const response = await fetch(
@@ -26,7 +44,7 @@ async function bookService(service) {
           customer_name: name,
           phone: phone,
           address: address,
-          service_type: service
+          service_type: selectedService
         })
       }
     );
@@ -35,8 +53,14 @@ async function bookService(service) {
       throw new Error(await response.text());
     }
 
-    alert("تم حفظ طلبك بنجاح!");
+    alert('تم حفظ طلبك بنجاح!');
+    this.reset();
+    closeBooking();
+
   } catch (error) {
-    alert("فشل حفظ الطلب: " + error.message);
+    alert('فشل حفظ الطلب: ' + error.message);
+  } finally {
+    submitButton.disabled = false;
+    submitButton.textContent = 'تأكيد الحجز';
   }
-}
+});

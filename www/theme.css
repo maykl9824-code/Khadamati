@@ -1,0 +1,76 @@
+*{box-sizing:border-box}
+body{
+margin:0;
+background:linear-gradient(160deg,#07172e,#102d50,#07172e);
+color:#f1f7ff;
+font-family:Arial,sans-serif;
+min-height:100vh
+}
+header{
+background:linear-gradient(135deg,#0754a5,#08a6d6);
+color:white;
+padding:30px 22px;
+border-radius:0 0 28px 28px;
+box-shadow:0 8px 25px #0005
+}
+header h1{font-size:30px;margin:0}
+header p{color:#e0f7ff}
+h2{padding:0 15px;color:#fff}
+.services{
+display:grid;
+grid-template-columns:repeat(2,1fr);
+gap:14px;
+padding:15px
+}
+.service{
+background:linear-gradient(145deg,#183b60,#102743);
+padding:20px 8px;
+text-align:center;
+border:1px solid #2c5b83;
+border-radius:18px;
+box-shadow:0 5px 15px #0004
+}
+.service span{font-size:36px}
+.service h3{font-size:16px;color:#fff}
+button{
+background:linear-gradient(135deg,#0879d8,#08b9d2);
+color:white;
+border:0;
+padding:13px;
+border-radius:12px;
+font-size:16px;
+font-weight:bold;
+width:100%
+}
+.service button{margin-top:8px}
+.banner{
+margin:15px;
+background:linear-gradient(135deg,#123e69,#087caa);
+padding:20px;
+border-radius:18px;
+color:white
+}
+.booking{
+display:none;
+background:#102b49;
+margin:15px;
+padding:20px;
+border:1px solid #2873a5;
+border-radius:18px;
+box-shadow:0 5px 20px #0005;
+color:white
+}
+.booking input,.booking textarea{
+width:100%;
+padding:14px;
+margin:8px 0;
+background:#071b31;
+color:white;
+border:1px solid #32658c;
+border-radius:10px;
+font-size:16px
+}
+.booking input::placeholder,.booking textarea::placeholder{color:#a8bfd4}
+.booking textarea{height:90px;resize:vertical}
+.booking h3{margin-top:0}
+.cancel{background:#526477;margin-top:8px}

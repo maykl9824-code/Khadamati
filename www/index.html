@@ -17,14 +17,22 @@ h2{padding:0 15px}
 .banner{margin:15px;background:#dceaff;padding:20px;border-radius:15px}
 button{background:#1765bd;color:white;border:0;padding:13px;border-radius:10px;font-size:16px;width:100%}
 .service button{margin-top:8px}
+.booking{display:none;background:white;margin:15px;padding:20px;border-radius:15px;box-shadow:0 3px 12px #0001}
+.booking input,.booking textarea{width:100%;padding:13px;margin:8px 0;border:1px solid #ccd5e2;border-radius:9px;font-size:16px}
+.booking textarea{height:90px;resize:vertical}
+.booking h3{margin-top:0}
+.cancel{background:#777;margin-top:8px}
 </style>
+<link rel="stylesheet" href="theme.css">
 </head>
 <body>
 <header>
 <h1>⚡ خدماتي</h1>
 <p>كل خدمات منزلك في تطبيق واحد</p>
 </header>
+
 <h2>خدماتنا المنزلية</h2>
+
 <div class="services">
 <div class="service"><span>⚡</span><h3>الكهرباء</h3><button onclick="bookService('الكهرباء')">احجز الآن</button></div>
 <div class="service"><span>🚰</span><h3>السباكة</h3><button onclick="bookService('السباكة')">احجز الآن</button></div>
@@ -35,10 +43,24 @@ button{background:#1765bd;color:white;border:0;padding:13px;border-radius:10px;f
 <div class="service"><span>🧹</span><h3>التنظيف</h3><button onclick="bookService('التنظيف')">احجز الآن</button></div>
 <div class="service"><span>🏠</span><h3>خدمات أخرى</h3><button onclick="bookService('خدمات أخرى')">احجز الآن</button></div>
 </div>
+
+<div class="booking" id="booking">
+<h3>احجز خدمتك</h3>
+<p id="selectedService"></p>
+<form id="bookingForm">
+<input id="customerName" type="text" placeholder="اكتب اسمك" required>
+<input id="customerPhone" type="tel" placeholder="رقم هاتفك" required>
+<textarea id="customerAddress" placeholder="اكتب عنوانك بالتفصيل" required></textarea>
+<button type="submit">تأكيد الحجز</button>
+</form>
+<button class="cancel" onclick="closeBooking()">إلغاء</button>
+</div>
+
 <div class="banner">
 <h3>محتاج فني لمنزلك؟</h3>
 <p>احجز الخدمة المناسبة بسهولة.</p>
 </div>
+
 <script src="app.js"></script>
 </body>
 </html>
