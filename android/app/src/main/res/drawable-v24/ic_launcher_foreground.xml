@@ -4,35 +4,36 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- Blue house roof -->
+    <!-- Small modern house -->
     <path
         android:fillColor="#168BFA"
-        android:pathData="M54,12 L10,48 L17,57 L54,27 L91,57 L98,48 Z"/>
+        android:pathData="M54,22 L25,47 L31,54 L54,34 L77,54 L83,47 Z"/>
 
-    <!-- White house -->
-    <path
-        android:fillColor="#168BFA"
-        android:pathData="M23,49 L54,24 L85,49 L85,91 L23,91 Z"/>
-
-    <!-- Door -->
-    <path
-        android:fillColor="#071B36"
-        android:pathData="M43,65 L65,65 L65,91 L43,91 Z"/>
-
-    <!-- Windows -->
-    <path
-        android:fillColor="#071B36"
-        android:pathData="M30,57 L43,57 L43,69 L30,69 Z M65,57 L78,57 L78,69 L65,69 Z"/>
-
-    <!-- White wrench -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M70,28 C78,22 88,27 88,36 L80,35 L75,41 L80,46 L85,42 C88,53 76,59 68,52 L54,70 L47,63 L64,47 C60,40 63,32 70,28 Z"/>
+        android:pathData="M33,50 L54,33 L75,50 L75,81 L33,81 Z"/>
 
-    <!-- Turquoise lightning -->
+    <!-- Door and window -->
+    <path
+        android:fillColor="#092342"
+        android:pathData="M48,63 L60,63 L60,81 L48,81 Z"/>
+
     <path
         android:fillColor="#20D6D0"
-        android:pathData="M49,35 L62,35 L54,49 L64,49 L43,75 L49,55 L39,55 Z"/>
+        android:pathData="M38,57 L46,57 L46,65 L38,65 Z"/>
+
+    <!-- Small screwdriver -->
+    <path
+        android:fillColor="#20D6D0"
+        android:pathData="M76,65 L82,71 L72,81 L66,75 Z"/>
+
+    <path
+        android:fillColor="#C9D7E8"
+        android:pathData="M65,76 L71,82 L63,90 L59,86 Z"/>
+
+    <!-- Small lightning -->
+    <path
+        android:fillColor="#FFC857"
+        android:pathData="M46,39 L57,39 L52,48 L59,48 L45,62 L49,51 L42,51 Z"/>
 
 </vector>
-

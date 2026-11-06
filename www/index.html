@@ -26,22 +26,22 @@ button{background:#1765bd;color:white;border:0;padding:13px;border-radius:10px;f
 <link rel="stylesheet" href="theme.css">
 </head>
 <body>
-<header>
-<h1>⚡ خدماتي</h1>
+<header style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+<h1>⚡ خدماتي</h1><button type="button" onclick="document.getElementById('technicianBooking').style.display='block'">👷 انضم كفني</button>
 <p>كل خدمات منزلك في تطبيق واحد</p>
 </header>
 
 <h2>خدماتنا المنزلية</h2>
 
 <div class="services">
-<div class="service"><span>⚡</span><h3>الكهرباء</h3><button onclick="bookService('الكهرباء')">احجز الآن</button></div>
-<div class="service"><span>🚰</span><h3>السباكة</h3><button onclick="bookService('السباكة')">احجز الآن</button></div>
-<div class="service"><span>❄️</span><h3>التكييف والتبريد</h3><button onclick="bookService('التكييف والتبريد')">احجز الآن</button></div>
-<div class="service"><span>🪚</span><h3>النجارة</h3><button onclick="bookService('النجارة')">احجز الآن</button></div>
-<div class="service"><span>🎨</span><h3>النقاشة والدهانات</h3><button onclick="bookService('النقاشة والدهانات')">احجز الآن</button></div>
-<div class="service"><span>🔥</span><h3>الغاز</h3><button onclick="bookService('الغاز')">احجز الآن</button></div>
-<div class="service"><span>🧹</span><h3>التنظيف</h3><button onclick="bookService('التنظيف')">احجز الآن</button></div>
-<div class="service"><span>🏠</span><h3>خدمات أخرى</h3><button onclick="bookService('خدمات أخرى')">احجز الآن</button></div>
+<div class="service"><img src="images/electricity.jpg" alt="الكهرباء" onerror="this.style.display='none'"><h3>الكهرباء</h3><button onclick="bookService('الكهرباء')">احجز الآن</button></div>
+<div class="service"><img src="images/plumbing.jpg" alt="السباكة" onerror="this.style.display='none'"><h3>السباكة</h3><button onclick="bookService('السباكة')">احجز الآن</button></div>
+<div class="service"><img src="images/air-conditioning.jpg" alt="التكييف والتبريد" onerror="this.style.display='none'"><h3>التكييف والتبريد</h3><button onclick="bookService('التكييف والتبريد')">احجز الآن</button></div>
+<div class="service"><img src="images/carpentry.jpg" alt="النجارة" onerror="this.style.display='none'"><h3>النجارة</h3><button onclick="bookService('النجارة')">احجز الآن</button></div>
+<div class="service"><img src="images/painting.jpg" alt="النقاشة والدهانات" onerror="this.style.display='none'"><h3>النقاشة والدهانات</h3><button onclick="bookService('النقاشة والدهانات')">احجز الآن</button></div>
+<div class="service"><img src="images/gas.jpg" alt="الغاز" onerror="this.style.display='none'"><h3>الغاز</h3><button onclick="bookService('الغاز')">احجز الآن</button></div>
+<div class="service"><img src="images/cleaning.jpg" alt="التنظيف" onerror="this.style.display='none'"><h3>التنظيف</h3><button onclick="bookService('التنظيف')">احجز الآن</button></div>
+<div class="service"><img src="images/other.jpg" alt="خدمات أخرى" onerror="this.style.display='none'"><h3>خدمات أخرى</h3><button onclick="bookService('خدمات أخرى')">احجز الآن</button></div>
 </div>
 
 <div class="booking" id="booking">
@@ -60,7 +60,59 @@ button{background:#1765bd;color:white;border:0;padding:13px;border-radius:10px;f
 <h3>محتاج فني لمنزلك؟</h3>
 <p>احجز الخدمة المناسبة بسهولة.</p>
 </div>
+<div class="booking" id="technicianBooking" style="display:none">
+<h3>تسجيل فني جديد 👷</h3>
+<form id="technicianForm">
+<input id="techName" type="text" placeholder="اسم الفني بالكامل" required>
+<input id="techPhone" type="tel" placeholder="رقم الموبايل" required>
+<select id="techService" required style="width:100%;padding:13px;margin:8px 0;border-radius:9px">
+<option value="">اختر تخصصك</option>
+<option>الكهرباء</option>
+<option>السباكة</option>
+<option>التكييف والتبريد</option>
+<option>النجارة</option>
+<option>النقاشة والدهانات</option>
+<option>الغاز</option>
+<option>التنظيف</option>
+</select>
+<button type="submit">إرسال طلب الانضمام</button>
+</form>
+<div id="technicianPanel" class="booking">
+  <h2>👷 طلبات الفني</h2>
+  <input id="technicianPhone" type="tel" placeholder="رقم هاتف الفني المسجل">
+  <button type="button" onclick="loadTechnicianRequests()">عرض الطلبات المتاحة</button>
+  <div id="technicianRequests"></div>
+</div>
+
+</div>
+
+
+<section id="trackRequest" class="booking">
+  <h2>📦 متابعة طلباتي</h2>
+  <input id="trackPhone" type="tel" placeholder="رقم الهاتف المستخدم في الحجز">
+  <button type="button" onclick="trackMyRequests()">عرض طلباتي</button>
+  <div id="myRequests"></div>
+</section>
+
+
+<section id="ratingSection" class="booking">
+  <h2>⭐ قيّم الخدمة</h2>
+  <input id="ratingRequestId" type="number" placeholder="رقم الطلب">
+  <div id="ratingStars">
+    <button type="button" data-rating="1">⭐</button>
+    <button type="button" data-rating="2">⭐</button>
+    <button type="button" data-rating="3">⭐</button>
+    <button type="button" data-rating="4">⭐</button>
+    <button type="button" data-rating="5">⭐</button>
+  </div>
+  <textarea id="ratingComment" placeholder="اكتب رأيك في الخدمة"></textarea>
+  <button type="button" onclick="submitRating()">إرسال التقييم</button>
+  <p id="ratingMessage"></p>
+</section>
 
 <script src="app.js"></script>
 </body>
 </html>
+
+0
+
