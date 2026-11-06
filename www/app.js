@@ -31,6 +31,8 @@ if (bookingForm) {
   bookingForm.addEventListener('submit', async function(event) {
     event.preventDefault();
 
+    const userId = localStorage.getItem('khadamati_user_id');
+    if (!userId) { alert('سجل الدخول أولاً قبل الحجز.'); return; }
     const name = document.getElementById('customerName').value.trim();
     const phone = document.getElementById('customerPhone').value.trim();
     const address = document.getElementById('customerAddress').value.trim();
@@ -53,6 +55,7 @@ if (bookingForm) {
           },
           body: JSON.stringify({
             customer_name: name,
+            user_id: userId,
             phone: phone,
             address: address,
             service_type: selectedService,
@@ -88,6 +91,8 @@ if (technicianForm) {
   technicianForm.addEventListener('submit', async function(event) {
     event.preventDefault();
 
+    const userId = localStorage.getItem('khadamati_user_id');
+    if (!userId) { alert('سجل الدخول أولاً قبل التسجيل كفني.'); return; }
     const name = document.getElementById('techName').value.trim();
     const phone = document.getElementById('techPhone').value.trim();
     const service = document.getElementById('techService').value;
@@ -110,6 +115,7 @@ if (technicianForm) {
           },
           body: JSON.stringify({
             full_name: name,
+            user_id: userId,
             phone: phone,
             service_type: service
           })
@@ -183,6 +189,7 @@ document.getElementById('authSignup').onclick = async () => {
 
     if (result.access_token) {
       localStorage.setItem('khadamati_token', result.access_token);
+    if (result.user?.id) localStorage.setItem('khadamati_user_id', result.user.id);
     }
 
     message.textContent = 'تم إنشاء الحساب. راجع بريدك إذا طُلب تأكيده.';
@@ -203,6 +210,7 @@ document.getElementById('authLogin').onclick = async () => {
     });
 
     localStorage.setItem('khadamati_token', result.access_token);
+    if (result.user?.id) localStorage.setItem('khadamati_user_id', result.user.id);
     message.textContent = 'تم تسجيل الدخول بنجاح.';
   } catch (error) {
     message.textContent = error.message;
@@ -212,12 +220,60 @@ document.getElementById('authLogin').onclick = async () => {
 // ============================
 // متابعة طلبات العميل
 // ============================
+async function cancelCustomerRequest(requestId, button) {
+  const token = localStorage.getItem('khadamati_token');
+
+  if (!token) {
+    alert('سجل الدخول أولاً.');
+    return;
+  }
+
+  if (!confirm('هل تريد إلغاء هذا الطلب؟')) return;
+
+  button.disabled = true;
+
+  try {
+    const response = await fetch(
+      SUPABASE_URL + '/rest/v1/rpc/cancel_service_request',
+      {
+        method: 'POST',
+        headers: {
+          apikey: SUPABASE_KEY,
+          Authorization: 'Bearer ' + token,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ p_request_id: Number(requestId) })
+      }
+    );
+
+    if (!response.ok) throw new Error(await response.text());
+
+    const result = await response.json();
+
+    if (result !== true) {
+      throw new Error('لا يمكن إلغاء الطلب بعد قبوله أو تغيّر حالته.');
+    }
+
+    alert('تم إلغاء الطلب.');
+    trackMyRequests();
+  } catch (error) {
+    alert('تعذر إلغاء الطلب: ' + error.message);
+    button.disabled = false;
+  }
+}
+
 async function trackMyRequests() {
   const phone = document.getElementById('trackPhone').value.trim();
   const output = document.getElementById('myRequests');
+  const userId = localStorage.getItem('khadamati_user_id');
 
   if (!phone) {
     alert('اكتب رقم الهاتف أولاً');
+    return;
+  }
+
+  if (!userId || !localStorage.getItem('khadamati_token')) {
+    alert('سجل الدخول إلى حسابك أولاً.');
     return;
   }
 
@@ -225,8 +281,9 @@ async function trackMyRequests() {
 
   try {
     const params = new URLSearchParams({
-      select: 'id,service_type,status,created_at,address',
+      select: 'id,service_type,status,created_at,address,user_id',
       phone: 'eq.' + phone,
+      user_id: 'eq.' + userId,
       order: 'created_at.desc'
     });
 
@@ -235,7 +292,7 @@ async function trackMyRequests() {
       {
         headers: {
           apikey: SUPABASE_KEY,
-          Authorization: 'Bearer ' + SUPABASE_KEY
+          Authorization: 'Bearer ' + localStorage.getItem('khadamati_token')
         }
       }
     );
@@ -246,19 +303,30 @@ async function trackMyRequests() {
     output.replaceChildren();
 
     if (!requests.length) {
-      output.textContent = 'لا توجد طلبات مسجلة بهذا الرقم.';
+      output.textContent = 'لا توجد طلبات مسجلة بهذا الرقم في حسابك.';
       return;
     }
 
     requests.forEach(request => {
       const card = document.createElement('div');
       card.className = 'service';
+
       const details = document.createElement('p');
       details.textContent =
         'رقم الطلب: ' + request.id +
         ' | الخدمة: ' + request.service_type +
         ' | الحالة: ' + request.status;
+
       card.appendChild(details);
+
+      if (request.status === 'searching' && request.user_id === userId) {
+        const cancel = document.createElement('button');
+        cancel.textContent = 'إلغاء الطلب';
+        cancel.style.background = '#c62828';
+        cancel.onclick = () => cancelCustomerRequest(request.id, cancel);
+        card.appendChild(cancel);
+      }
+
       output.appendChild(card);
     });
   } catch (error) {
@@ -266,7 +334,6 @@ async function trackMyRequests() {
   }
 }
 
-// ============================
 // نظام تقييم الخدمة
 // ============================
 let selectedRating = 0;
@@ -286,17 +353,38 @@ async function submitRating() {
   const comment = document.getElementById('ratingComment').value.trim();
   const message = document.getElementById('ratingMessage');
 
-  if (!requestId || selectedRating < 1) {
-    message.textContent = 'اكتب رقم الطلب واختر عدد النجوم.';
+  if (!requestId || !/^\d+$/.test(requestId) || selectedRating < 1) {
+    message.textContent = 'اكتب رقم الطلب الصحيح واختر عدد النجوم.';
     return;
   }
 
   try {
+    message.textContent = 'جاري التحقق من الطلب...';
+
+    const check = await fetch(
+      SUPABASE_URL + '/rest/v1/service_requests?id=eq.' +
+      encodeURIComponent(requestId) + '&select=status',
+      {
+        headers: {
+          apikey: SUPABASE_KEY,
+          Authorization: 'Bearer ' + (localStorage.getItem('khadamati_token') || SUPABASE_KEY)
+        }
+      }
+    );
+
+    if (!check.ok) throw new Error(await check.text());
+
+    const requests = await check.json();
+
+    if (!requests.length || requests[0].status !== 'completed') {
+      throw new Error('يمكن تقييم الطلب بعد اكتمال الخدمة فقط.');
+    }
+
     const response = await fetch(SUPABASE_URL + '/rest/v1/reviews', {
       method: 'POST',
       headers: {
         apikey: SUPABASE_KEY,
-        Authorization: 'Bearer ' + SUPABASE_KEY,
+        Authorization: 'Bearer ' + (localStorage.getItem('khadamati_token') || SUPABASE_KEY),
         'Content-Type': 'application/json',
         Prefer: 'return=minimal'
       },
@@ -311,6 +399,11 @@ async function submitRating() {
 
     message.textContent = 'تم حفظ تقييمك بنجاح ⭐';
     selectedRating = 0;
+    document.getElementById('ratingComment').value = '';
+    document.querySelectorAll('#ratingStars button').forEach(star => {
+      star.style.opacity = '0.35';
+    });
+
   } catch (error) {
     message.textContent = 'تعذر حفظ التقييم: ' + error.message;
   }
@@ -334,7 +427,7 @@ async function loadTechnicianRequests() {
     const techResponse = await fetch(
       SUPABASE_URL + '/rest/v1/technicians?phone=eq.' +
       encodeURIComponent(phone) + '&select=id,service_type',
-      { headers: { apikey: SUPABASE_KEY, Authorization: 'Bearer ' + SUPABASE_KEY } }
+      { headers: { apikey: SUPABASE_KEY, Authorization: 'Bearer ' + (localStorage.getItem('khadamati_token') || SUPABASE_KEY) } }
     );
 
     if (!techResponse.ok) throw new Error(await techResponse.text());
@@ -352,7 +445,7 @@ async function loadTechnicianRequests() {
 
     const response = await fetch(
       SUPABASE_URL + '/rest/v1/service_requests?' + params,
-      { headers: { apikey: SUPABASE_KEY, Authorization: 'Bearer ' + SUPABASE_KEY } }
+      { headers: { apikey: SUPABASE_KEY, Authorization: 'Bearer ' + (localStorage.getItem('khadamati_token') || SUPABASE_KEY) } }
     );
 
     if (!response.ok) throw new Error(await response.text());
@@ -378,7 +471,12 @@ async function loadTechnicianRequests() {
       accept.textContent = 'قبول الطلب';
       accept.onclick = () => acceptTechnicianRequest(request.id, technician.id, accept);
 
-      card.append(details, accept);
+      const reject = document.createElement('button');
+      reject.textContent = 'رفض الطلب';
+      reject.style.background = '#777';
+      reject.onclick = () => rejectTechnicianRequest(request.id, technician.id, reject);
+
+      card.append(details, accept, reject);
       output.appendChild(card);
     });
   } catch (error) {
@@ -398,7 +496,7 @@ async function acceptTechnicianRequest(requestId, technicianId, button) {
         method: 'PATCH',
         headers: {
           apikey: SUPABASE_KEY,
-          Authorization: 'Bearer ' + SUPABASE_KEY,
+          Authorization: 'Bearer ' + (localStorage.getItem('khadamati_token') || SUPABASE_KEY),
           'Content-Type': 'application/json',
           Prefer: 'return=representation'
         },
@@ -423,6 +521,45 @@ async function acceptTechnicianRequest(requestId, technicianId, button) {
   }
 }
 
+async function rejectTechnicianRequest(requestId, technicianId, button) {
+  const userId = localStorage.getItem('khadamati_user_id');
+  const token = localStorage.getItem('khadamati_token');
+
+  if (!userId || !token) {
+    alert('سجل الدخول أولاً.');
+    return;
+  }
+
+  if (!confirm('هل تريد رفض هذا الطلب؟')) return;
+
+  button.disabled = true;
+
+  try {
+    const response = await fetch(SUPABASE_URL + '/rest/v1/technician_rejections', {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: 'Bearer ' + token,
+        'Content-Type': 'application/json',
+        Prefer: 'return=minimal'
+      },
+      body: JSON.stringify({
+        request_id: requestId,
+        technician_id: technicianId,
+        user_id: userId
+      })
+    });
+
+    if (!response.ok) throw new Error(await response.text());
+
+    alert('تم رفض الطلب.');
+    loadTechnicianRequests();
+  } catch (error) {
+    alert('تعذر رفض الطلب: ' + error.message);
+    button.disabled = false;
+  }
+}
+
 // تحديث حالة الطلب بواسطة الفني
 async function updateRequestStatus(requestId, status) {
   try {
@@ -432,7 +569,7 @@ async function updateRequestStatus(requestId, status) {
         method: 'PATCH',
         headers: {
           apikey: SUPABASE_KEY,
-          Authorization: 'Bearer ' + SUPABASE_KEY,
+          Authorization: 'Bearer ' + (localStorage.getItem('khadamati_token') || SUPABASE_KEY),
           'Content-Type': 'application/json',
           Prefer: 'return=minimal'
         },
